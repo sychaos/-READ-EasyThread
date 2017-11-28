@@ -30,6 +30,7 @@ final class CallableWrapper<T> implements Callable<T> {
         this.proxy = proxy;
     }
 
+    //  TODO Callable 跟 Runnable 啥子区别
     @Override
     public T call() throws Exception {
         Tools.resetThread(Thread.currentThread(),name,callback);

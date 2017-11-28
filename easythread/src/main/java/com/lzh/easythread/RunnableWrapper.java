@@ -32,15 +32,18 @@ final class RunnableWrapper implements Runnable {
 
     @Override
     public void run() {
-        Tools.resetThread(Thread.currentThread(),name,callback);
+        // 不是很懂这部分 TODO
+        Tools.resetThread(Thread.currentThread(), name, callback);
         if (callback != null) {
+            // 这样的话难道不是跑在子线程？？ TODO 然而并不是
             callback.onStart(Thread.currentThread());
         }
         // avoid NullPointException
+        // 执行子线程方法
         if (proxy != null) {
             proxy.run();
         }
-        if (callback != null)  {
+        if (callback != null) {
             callback.onCompleted(Thread.currentThread());
         }
     }

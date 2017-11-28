@@ -27,7 +27,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-public final class EasyThread implements Executor{
+public final class EasyThread implements Executor {
     private ExecutorService pool;
     private String defName;// default thread name.
     private Callback defCallback;// default thread callback.
@@ -42,37 +42,41 @@ public final class EasyThread implements Executor{
         this.defCallback = callback;
     }
 
-    public EasyThread name (String name) {
+    public EasyThread name(String name) {
         this.name = name;
         return this;
     }
 
-    public EasyThread callback (Callback callback) {
+    public EasyThread callback(Callback callback) {
         this.callback = callback;
         return this;
     }
 
-    public EasyThread delay (long time, TimeUnit unit) {
+    public EasyThread delay(long time, TimeUnit unit) {
         delay = unit.toMillis(time);
         return this;
     }
 
     @Override
-    public void execute (Runnable runnable) {
+    public void execute(Runnable runnable) {
+        // 感觉不该并啊
         if (delay > 0 && pool instanceof ScheduledExecutorService) {
-            ((ScheduledExecutorService)pool).schedule(runnable, delay, TimeUnit.MILLISECONDS);
+            // 执行子线程方法 为什么不改成RunnableWrapper呢？
+            ((ScheduledExecutorService) pool).schedule(runnable, delay, TimeUnit.MILLISECONDS);
         } else {
+            // TODO 非常真实的使用
             pool.execute(new RunnableWrapper(getName(), getCallback(), runnable));
         }
+        // 清空操作
         release();
     }
 
-    public <T> Future<T> submit (Callable<T> callable) {
+    public <T> Future<T> submit(Callable<T> callable) {
         Future<T> result;
         if (delay > 0 && pool instanceof ScheduledExecutorService) {
-            result = ((ScheduledExecutorService)pool).schedule(callable, delay, TimeUnit.MILLISECONDS);
+            result = ((ScheduledExecutorService) pool).schedule(callable, delay, TimeUnit.MILLISECONDS);
         } else {
-            result = pool.submit(new CallableWrapper<>(getName() ,getCallback(),callable));
+            result = pool.submit(new CallableWrapper<>(getName(), getCallback(), callable));
         }
         release();
         return result;
@@ -84,11 +88,11 @@ public final class EasyThread implements Executor{
         this.delay = -1;
     }
 
-    private String getName () {
+    private String getName() {
         return Tools.isEmpty(name) ? defName : name;
     }
 
-    private Callback getCallback () {
+    private Callback getCallback() {
         Callback used = callback == null ? defCallback : callback;
         if (Tools.isAndroid) {
             return new AndroidCallback(used);
@@ -114,6 +118,7 @@ public final class EasyThread implements Executor{
     private static class DefaultFactory implements ThreadFactory {
 
         private int priority;
+
         DefaultFactory(int priority) {
             this.priority = priority;
         }
@@ -183,34 +188,39 @@ public final class EasyThread implements Executor{
         String name;
         Callback callback;
 
-        private Builder(int size,  int type) {
+        private Builder(int size, int type) {
             this.size = size;
             this.type = type;
         }
 
+        // 对应不同种类的线程池
+
         /**
          * Create a cacheable thread manager to used:<b>Executors.newCachedThreadPool()</b>
+         *
          * @return Builder itself
          */
-        public static Builder cacheable () {
+        public static Builder cacheable() {
             return new Builder(0, TYPE_CACHEABLE);
         }
 
         /**
          * Create a thread manager with a limit size to used:<b>Executors.newFixedThreadPool()</b>
+         *
          * @param size size
          * @return Builder itself
          */
-        public static Builder fixed (int size) {
+        public static Builder fixed(int size) {
             return new Builder(size, TYPE_FIXED);
         }
 
         /**
          * Create a thread manager with a scheduled thread pool: <b>Executors.newScheduledThreadPool()</b>
+         *
          * @param size Thread size.
          * @return Builder itself
          */
-        public static Builder scheduled (int size) {
+        public static Builder scheduled(int size) {
             return new Builder(size, TYPE_SCHEDULED);
         }
 
@@ -219,16 +229,17 @@ public final class EasyThread implements Executor{
          *
          * @return Builder itself
          */
-        public static Builder single () {
+        public static Builder single() {
             return new Builder(0, TYPE_SINGLE);
         }
 
         /**
          * Set a default name for thread manager to used
+         *
          * @param name The thread name.
          * @return Builder itself
          */
-        public Builder name (String name) {
+        public Builder name(String name) {
             if (!Tools.isEmpty(name)) {
                 this.name = name;
             }
@@ -237,33 +248,36 @@ public final class EasyThread implements Executor{
 
         /**
          * Set a default priority for thread manager to used
+         *
          * @param priority The thread priority
-         * @return  itself
+         * @return itself
          */
-        public Builder priority (int priority) {
+        public Builder priority(int priority) {
             this.priority = priority;
             return this;
         }
 
         /**
          * Set a default callback for thread manager
+         *
          * @param callback The callback
-         * @return  itself
+         * @return itself
          */
-        public Builder callback (Callback callback) {
+        public Builder callback(Callback callback) {
             this.callback = callback;
             return this;
         }
 
         /**
          * Create a thread manager to used with some configurations.
-         * @return  EasyThread instance
+         *
+         * @return EasyThread instance
          */
-        public EasyThread build () {
+        public EasyThread build() {
             priority = Math.max(Thread.MIN_PRIORITY, priority);
             priority = Math.min(Thread.MAX_PRIORITY, priority);
 
-            size = Math.max(0,size);
+            size = Math.max(0, size);
             if (Tools.isEmpty(name)) {
                 // set default thread name
                 switch (type) {
@@ -279,7 +293,7 @@ public final class EasyThread implements Executor{
                 }
             }
 
-            return new EasyThread(type,size,priority,name,callback);
+            return new EasyThread(type, size, priority, name, callback);
         }
     }
 }
