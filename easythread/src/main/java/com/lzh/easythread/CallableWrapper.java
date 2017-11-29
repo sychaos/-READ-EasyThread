@@ -30,7 +30,8 @@ final class CallableWrapper<T> implements Callable<T> {
         this.proxy = proxy;
     }
 
-    //  TODO Callable 跟 Runnable 啥子区别
+    // 方法 submit(Callable) 和方法 submit(Runnable) 比较类似，但是区别则在于它们接收不同的参数类型。
+    // Callable 的实例与 Runnable 的实例很类似，但是 Callable 的 call() 方法可以返回壹個结果。方法 Runnable.run() 则不能返回结果。
     @Override
     public T call() throws Exception {
         Tools.resetThread(Thread.currentThread(),name,callback);

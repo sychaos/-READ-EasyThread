@@ -57,23 +57,30 @@ public final class EasyThread implements Executor {
         return this;
     }
 
+    // execute(Runnable) 接收壹個 java.lang.Runnable 对象作为参数，并且以异步的方式执行它
     @Override
     public void execute(Runnable runnable) {
-        // 感觉不该并啊
+        //  ScheduledExecutorService执行周期性或定时任务 正常情况会走else分支
         if (delay > 0 && pool instanceof ScheduledExecutorService) {
-            // 执行子线程方法 为什么不改成RunnableWrapper呢？
+            //  schedule(Callable<V> callable, long delay, TimeUnit unit)
+            //  创建并执行在给定延迟后启用的 ScheduledFuture。
             ((ScheduledExecutorService) pool).schedule(runnable, delay, TimeUnit.MILLISECONDS);
         } else {
-            // TODO 非常真实的使用
+            //非常真实的使用
             pool.execute(new RunnableWrapper(getName(), getCallback(), runnable));
         }
         // 清空操作
         release();
     }
 
+    // 方法 submit(Callable) 和方法 submit(Runnable) 比较类似，但是区别则在于它们接收不同的参数类型。
+    // Callable 的实例与 Runnable 的实例很类似，但是 Callable 的 call() 方法可以返回壹個结果。方法 Runnable.run() 则不能返回结果。
     public <T> Future<T> submit(Callable<T> callable) {
         Future<T> result;
+        //  ScheduledExecutorService执行周期性或定时任务 正常情况会走else分支
         if (delay > 0 && pool instanceof ScheduledExecutorService) {
+            //  schedule(Callable<V> callable, long delay, TimeUnit unit)
+            //  创建并执行在给定延迟后启用的 ScheduledFuture。
             result = ((ScheduledExecutorService) pool).schedule(callable, delay, TimeUnit.MILLISECONDS);
         } else {
             result = pool.submit(new CallableWrapper<>(getName(), getCallback(), callable));
