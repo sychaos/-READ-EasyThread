@@ -3,6 +3,14 @@
 
 一款安全、轻巧、简单的线程池管理器
 
+### 源码解析
+由于篇幅有限就简单的说一下比较重要的方法吧
+代码共有五个类：
+- Tools中resetThread用来catch子线程中的error并调用onError
+- RunnableWrapper，CallableWrapper 很类似 但是实现callable接口的CallableWrapper可以有返回值
+  在线程开启前调用callback的onStart，线程完成后调用callback的onFinish ，callback被AndroidCallback包装，
+  在调用时会通过主线程的handler.post切回主线程
+
 ### 特性
 
 - 可重命名线程名。方便出错后定位问题。
