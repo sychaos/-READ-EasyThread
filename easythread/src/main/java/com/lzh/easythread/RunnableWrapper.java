@@ -32,7 +32,7 @@ final class RunnableWrapper implements Runnable {
 
     @Override
     public void run() {
-        // 不是很懂这部分 TODO
+        // 当子线程发生错误的时候，利用该方法catch
         Tools.resetThread(Thread.currentThread(), name, callback);
         if (callback != null) {
             callback.onStart(Thread.currentThread());

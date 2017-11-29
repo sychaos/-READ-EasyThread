@@ -138,7 +138,9 @@ public final class EasyThread implements Executor {
         }
     }
 
+    // 其实是给Callback包了一层，利用主线程的Handler发送回调
     private static class AndroidCallback implements Callback {
+        // 主线程的handler
         private static Handler main = new Handler(Looper.getMainLooper());
         private Callback delegate;
 
